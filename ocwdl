@@ -1,0 +1,112 @@
+#! /usr/bin/env python
+
+import os 
+import re
+import urllib.request
+from bs4 import BeautifulSoup as BSP
+import wget
+
+namePattern = r'/[\~A-Za-z0-9-.:_]*/'
+pdfPattern = r'[\~A-Za-z0-9-/.:_]*.pdf' 
+zipPattern = r'[\~A-Za-z0-9-/.:_]*.zip'
+
+
+class course():
+    
+    def __init__(self, mainPageUrl, outputLocation):
+        """
+        self.outputLocation  : the place where courses resources lay
+        self.mainPageUrl     : the url of the main page of the very course in OCW
+        self.name            : the name of the course
+        self.dlFolder        : the place where resources of the very course will be downloaded to
+        """
+        self.outputLocation = outputLocation
+        self.mainPageUrl = mainPageUrl
+        self.name = re.findall(namePattern, self.mainPageUrl)[-1]
+        
+        if not os.path.exists(self.outputLocation):
+            os.mkdir(self.outputLocation)
+        self.dlFolder = self.outputLocation + '/' + self.name[1:-1]
+        if not os.path.exists(self.dlFolder):
+            os.mkdir(self.dlFolder)
+        
+        
+        
+        try:
+            self.download(downloadLocation = self.dlFolder, choice = "assignments")
+        finally:
+            self.download(downloadLocation = self.dlFolder, choice = "exams")
+
+
+    def download(self, downloadLocation, choice = 'assignments'):
+        if not os.path.exists(downloadLocation):
+            os.mkdir(downloadLocation)
+        downloadLocation = downloadLocation + '/' + choice
+        if not os.path.exists(downloadLocation):
+            os.mkdir(downloadLocation)
+
+        downloadUrl = self.mainPageUrl + '/' + choice
+        html = urllib.request.urlopen(downloadUrl)
+        bs = BSP(html, 'html.parser')
+        pdfs = bs.find_all('a', {'href':re.compile(pdfPattern)})
+        zips = bs.find_all('a', {'href':re.compile(zipPattern)})
+
+        # -- start downloading --
+        for pdf in pdfs:
+            try:
+                self.dlFile(downloadLocation, pdf['href'])
+            else:
+                print('ERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERROR')
+                with open('/home/ahacad/ocwdlerror', 'a') as f:
+                    f.write('errow happening while downloading', pdf)
+            finally:
+                continue
+        print('\n\n\n##############################################################\n                   ###FINISHED DOWNLOAD PDF###\n ##############################################################') 
+        for zip_ in zips:
+            try:
+                self.dlFile(downloadLocation, zip_['href'])
+            else:
+                print('ERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERROR')
+                with open('/home/ahacad/ocwdlerror', 'a') as f:
+                    f.write('errow happening while downloading', zip_, '\n')
+            finally:
+                continue
+        print('\n\n\n##############################################################\n                   ###FINISHED DOWNLOAD ZIP###\n ##############################################################')
+        # -- finish downloading --
+
+#    def dlExams(self, examsLocation):
+#        if not os.path.exists(examsLocation):
+#            os.mkdir(examsLocation)
+#        if not os.path.exists(examsLocation + '/' + 'exams')
+#            os.mkdir(examsLocation + '/' + 'exams')
+#        examsUrl =
+#        examsUrl = self.mainPageUrl + '/exams'
+
+    def dlFile(self, location, url):
+        """
+        down file from url to location
+        location should be a folder, and url should be complete
+        """
+
+        url = "https://ocw.mit.edu" + url
+
+        if not os.path.exists(location):
+            os.mkdir(location)
+        print("##############################################################\n###Downloading:", url,"###\n#############################################################")
+        wget.download(url, out=location)
+        
+
+
+def readFromFile(fileName):
+    """get course urls from file"""
+    with open(fileName, 'r') as f:
+        for line in f:
+            ocw = course(line)
+
+def main():
+    ocw = course("https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/", "/home/ahacad/test/OCW")
+
+if __name__ == "__main__":
+    main()
+
+#"https://ocw.mit.edu/courses/mathematics/18-06-linear-algebra-spring-2010/", "/home/ahacad/test/OCW"
