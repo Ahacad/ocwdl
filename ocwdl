@@ -9,6 +9,11 @@ import wget
 namePattern = r'/[\~A-Za-z0-9-.:_]*/'
 filePattern = r'[\~A-Za-z0-9-/.:_]*' 
 
+BARRIER = r'##############################################################'
+ERROR = r'ERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERROR'
+
+
+
 
 class course():
     
@@ -37,7 +42,7 @@ class course():
             self.download(downloadLocation = self.dlFolder, choice = "exams")
 
 
-    def download(self, downloadLocation, choice = 'assignments'):
+    def download(self, downloadLocation, choice = '', fileTypes = [r'pdf', r'zip', r'gz']):
         if not os.path.exists(downloadLocation):
             os.mkdir(downloadLocation)
         downloadLocation = downloadLocation + '/' + choice
@@ -47,51 +52,36 @@ class course():
         downloadUrl = self.mainPageUrl + '/' + choice
         html = urllib.request.urlopen(downloadUrl)
         bs = BSP(html, 'html.parser')
-        pdfs = bs.find_all('a', {'href':re.compile(filePattern + r'.pdf')})
-        zips = bs.find_all('a', {'href':re.compile(filePattern + r'.zip')})
 
-        # -- start downloading --
-        for pdf in pdfs:
-            try:
-                self.dlFile(downloadLocation, pdf['href'])
-            except:
-                print('ERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERROR')
-                with open('/home/ahacad/ocwdlerror', 'a') as f:
-                    f.write('errow happening while downloading' + str(pdf))
-            finally:
-                pass
-        print('\n\n\n##############################################################\n                   ###FINISHED DOWNLOAD PDF###\n ##############################################################') 
-        for zip_ in zips:
-            try:
-                self.dlFile(downloadLocation, zip_['href'])
-            except:
-                print('ERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERROR')
-                with open('/home/ahacad/ocwdlerror', 'a') as f:
-                    f.write('errow happening while downloading' + str(zip_) + '\n')
-            finally:
-                pass
-        print('\n\n\n##############################################################\n                   ###FINISHED DOWNLOAD ZIP###\n ##############################################################')
-        # -- finish downloading --
+        
+        for fileType in fileTypes:
+            filefinds = bs.find_all('a', {'href':re.compile(filePattern + r'.' + fileType)})
 
-#    def dlExams(self, examsLocation):
-#        if not os.path.exists(examsLocation):
-#            os.mkdir(examsLocation)
-#        if not os.path.exists(examsLocation + '/' + 'exams')
-#            os.mkdir(examsLocation + '/' + 'exams')
-#        examsUrl =
-#        examsUrl = self.mainPageUrl + '/exams'
+            # -- start downloading --
+            for filefind in filefinds:
+                try:
+                    self.dlFile(downloadLocation, filefind['href'])
+                except:
+                    print(ERROR)
+                    with open('./ocwdlerror', 'a') as f:
+                        f.write('errow happened while downloading' + str(filefind) + '\n')
+                finally:
+                    pass
+            print('\n\n\n' + BARRIER + '\n' + '                   ###FINISHED DOWNLOAD PDF###\n' + BARRIER + '\n') 
+            # -- finish downloading --
 
-    def dlFile(self, location, url):
+
+    def dlFile(self, location, url, header = "https://ocw.mit.edu"):
         """
         down file from url to location
         location should be a folder, and url should be complete
         """
         if url[0] != 'h':
-            url = "https://ocw.mit.edu" + url
+            url = header + url
 
         if not os.path.exists(location):
             os.mkdir(location)
-        print("##############################################################\n###Downloading:", url,"###\n#############################################################")
+        print(BARRIER + '\n###Downloading:', url,'###\n' + BARRIER + '\n')
         wget.download(url, out=location)
         
 
@@ -103,7 +93,7 @@ def readFromFile(fileName):
             try:
                 ocw = course(line[:-1], "/home/ahacad/test/OCW")
             except:
-                print('ERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERROR')
+                print(ERROR)
                 print('errow happening while downloading   ' + str(line) + '\n')
                 with open('/home/ahacad/ocwdlerror', 'a') as f:
                     f.write('errow happening while downloading   ' + str(line) + '\n')
