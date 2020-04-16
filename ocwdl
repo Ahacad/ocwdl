@@ -57,7 +57,7 @@ class course():
             except:
                 print('ERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERROR')
                 with open('/home/ahacad/ocwdlerror', 'a') as f:
-                    f.write('errow happening while downloading', pdf)
+                    f.write('errow happening while downloading' + str(pdf))
             finally:
                 pass
         print('\n\n\n##############################################################\n                   ###FINISHED DOWNLOAD PDF###\n ##############################################################') 
@@ -67,7 +67,7 @@ class course():
             except:
                 print('ERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERROR')
                 with open('/home/ahacad/ocwdlerror', 'a') as f:
-                    f.write('errow happening while downloading', zip_, '\n')
+                    f.write('errow happening while downloading' + str(zip_) + '\n')
             finally:
                 pass
         print('\n\n\n##############################################################\n                   ###FINISHED DOWNLOAD ZIP###\n ##############################################################')
@@ -101,11 +101,12 @@ def readFromFile(fileName):
     with open(fileName, 'r') as f:
         for line in f:
             try:
-                ocw = course(line)
+                ocw = course(line[:-1], "/home/ahacad/test/OCW")
             except:
                 print('ERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERROR')
+                print('errow happening while downloading   ' + str(line) + '\n')
                 with open('/home/ahacad/ocwdlerror', 'a') as f:
-                    f.write('errow happening while downloading', line, '\n')
+                    f.write('errow happening while downloading   ' + str(line) + '\n')
             finally:
                 pass
 
