@@ -7,8 +7,7 @@ from bs4 import BeautifulSoup as BSP
 import wget
 
 namePattern = r'/[\~A-Za-z0-9-.:_]*/'
-pdfPattern = r'[\~A-Za-z0-9-/.:_]*.pdf' 
-zipPattern = r'[\~A-Za-z0-9-/.:_]*.zip'
+filePattern = r'[\~A-Za-z0-9-/.:_]*' 
 
 
 class course():
@@ -48,29 +47,29 @@ class course():
         downloadUrl = self.mainPageUrl + '/' + choice
         html = urllib.request.urlopen(downloadUrl)
         bs = BSP(html, 'html.parser')
-        pdfs = bs.find_all('a', {'href':re.compile(pdfPattern)})
-        zips = bs.find_all('a', {'href':re.compile(zipPattern)})
+        pdfs = bs.find_all('a', {'href':re.compile(filePattern + r'.pdf')})
+        zips = bs.find_all('a', {'href':re.compile(filePattern + r'.zip')})
 
         # -- start downloading --
         for pdf in pdfs:
             try:
                 self.dlFile(downloadLocation, pdf['href'])
-            else:
+            except:
                 print('ERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERROR')
                 with open('/home/ahacad/ocwdlerror', 'a') as f:
                     f.write('errow happening while downloading', pdf)
             finally:
-                continue
+                pass
         print('\n\n\n##############################################################\n                   ###FINISHED DOWNLOAD PDF###\n ##############################################################') 
         for zip_ in zips:
             try:
                 self.dlFile(downloadLocation, zip_['href'])
-            else:
+            except:
                 print('ERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERROR')
                 with open('/home/ahacad/ocwdlerror', 'a') as f:
                     f.write('errow happening while downloading', zip_, '\n')
             finally:
-                continue
+                pass
         print('\n\n\n##############################################################\n                   ###FINISHED DOWNLOAD ZIP###\n ##############################################################')
         # -- finish downloading --
 
@@ -87,8 +86,8 @@ class course():
         down file from url to location
         location should be a folder, and url should be complete
         """
-
-        url = "https://ocw.mit.edu" + url
+        if url[0] != 'h':
+            url = "https://ocw.mit.edu" + url
 
         if not os.path.exists(location):
             os.mkdir(location)
@@ -101,10 +100,19 @@ def readFromFile(fileName):
     """get course urls from file"""
     with open(fileName, 'r') as f:
         for line in f:
-            ocw = course(line)
+            try:
+                ocw = course(line)
+            except:
+                print('ERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERROR')
+                with open('/home/ahacad/ocwdlerror', 'a') as f:
+                    f.write('errow happening while downloading', line, '\n')
+            finally:
+                pass
+
 
 def main():
-    ocw = course("https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/", "/home/ahacad/test/OCW")
+    #ocw = course("https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/", "/home/ahacad/test/OCW")
+    readFromFile("/home/ahacad/ocwlist")
 
 if __name__ == "__main__":
     main()
