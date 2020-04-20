@@ -17,37 +17,43 @@ ERROR = r'ERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERROR
 
 class course():
     
-    def __init__(self, mainPageUrl, outputLocation):
+    def __init__(self, mainPageUrl, outputLocation, name = None):
         """
         self.outputLocation  : the place where courses resources lay
         self.mainPageUrl     : the url of the main page of the very course in OCW
         self.name            : the name of the course
         self.dlFolder        : the place where resources of the very course will be downloaded to
         """
+        
         self.outputLocation = outputLocation
         self.mainPageUrl = mainPageUrl
-        self.name = re.findall(namePattern, self.mainPageUrl)[-1]
+        if name == None:
+            self.name = re.findall(namePattern, self.mainPageUrl)[-1][1:-1]
         
+        # make folders to store files
         if not os.path.exists(self.outputLocation):
             os.mkdir(self.outputLocation)
-        self.dlFolder = self.outputLocation + '/' + self.name[1:-1]
+        self.dlFolder = self.outputLocation + '/' + self.name
         if not os.path.exists(self.dlFolder):
             os.mkdir(self.dlFolder)
+        # -- * --
         
-        
-    def start(self):
+    def startocw(self):
         try:
             self.download(downloadLocation = self.dlFolder, choice = "assignments")
         finally:
             self.download(downloadLocation = self.dlFolder, choice = "exams")
 
 
-    def download(self, downloadLocation, choice = '', fileTypes = [r'pdf', r'zip', r'gz']):
+    def dlPage(self, downloadLocation, choice = '', fileTypes = [r'pdf', r'zip', r'gz', r'tex', r'png', r'ipynb', r'py']):
+
+        # make folder to store files
         if not os.path.exists(downloadLocation):
             os.mkdir(downloadLocation)
         downloadLocation = downloadLocation + '/' + choice
         if not os.path.exists(downloadLocation):
             os.mkdir(downloadLocation)
+        # -- * -- 
 
         downloadUrl = self.mainPageUrl + '/' + choice
         html = urllib.request.urlopen(downloadUrl)
@@ -56,19 +62,16 @@ class course():
         
         for fileType in fileTypes:
             filefinds = bs.find_all('a', {'href':re.compile(filePattern + r'.' + fileType)})
-
-            # -- start downloading --
             for filefind in filefinds:
                 try:
                     self.dlFile(downloadLocation, filefind['href'])
                 except:
-                    print(ERROR)
+                    print('\n' + ERROR + '\n')
                     with open('./ocwdlerror', 'a') as f:
                         f.write('error happened while downloading' + str(filefind) + '\n')
                 finally:
                     pass
-            print('\n\n\n' + BARRIER + '\n' + '                   ###FINISHED DOWNLOAD PDF###\n' + BARRIER + '\n') 
-            # -- finish downloading --
+            print('\n\n\n' + BARRIER + '\n' + '                   ###FINISHED DOWNLOAD' + str(fileType) + '###\n' + BARRIER + '\n') 
 
 
     def dlFile(self, location, url, header = "https://ocw.mit.edu"):
@@ -81,7 +84,7 @@ class course():
 
         if not os.path.exists(location):
             os.mkdir(location)
-        print(BARRIER + '\n###Downloading:', url,'###\n' + BARRIER + '\n')
+        print('\n'+ BARRIER + '\n###Downloading:', url,'###\n' + BARRIER + '\n')
         wget.download(url, out=location)
         
 
@@ -94,9 +97,9 @@ def readFromFile(fileName):
                 ocw = course(line[:-1], "/home/ahacad/test/OCW")
             except:
                 print(ERROR)
-                print('error happening while downloading   ' + str(line) + '\n')
+                print('errow happening while downloading   ' + str(line) + '\n')
                 with open('/home/ahacad/ocwdlerror', 'a') as f:
-                    f.write('error happening while downloading   ' + str(line) + '\n')
+                    f.write('errow happening while downloading   ' + str(line) + '\n')
             finally:
                 pass
 
