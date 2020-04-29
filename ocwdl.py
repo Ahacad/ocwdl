@@ -45,7 +45,7 @@ class course():
             self.download(downloadLocation = self.dlFolder, choice = "exams")
 
 
-    def dlPage(self, downloadLocation, choice = '', fileTypes = [r'pdf', r'zip', r'gz', r'tex', r'png', r'ipynb', r'py']):
+    def dlPage(self, downloadLocation, choice = '', fileTypes = [r'pdf', r'zip', r'gz', r'tex', r'png', r'ipynb', r'py', r'tar']):
 
         # make folder to store files
         if not os.path.exists(downloadLocation):
