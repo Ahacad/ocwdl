@@ -1,2 +1,4 @@
 language: python
 script: true
+python:
+    - '3.7'

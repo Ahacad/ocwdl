@@ -2,7 +2,8 @@
 
 
 # ocwdl
-![travis-ci](https://travis-ci.com/Ahacad/ocwdl.svg?branch=master)
+![travis-ci](https://travis-ci.com/Ahacad/ocwdl.svg?branch=master)    [![Coverage Status](https://coveralls.io/repos/github/Ahacad/ocwdl/badge.svg?branch=master)](https://coveralls.io/github/Ahacad/ocwdl?branch=master)
+
 The python program to download files from OCW (MIT OpenCourseWare).
 
 
