@@ -2,6 +2,7 @@
 
 
 # ocwdl
+[travis-ci](https://travis-ci.com/Ahacad/ocwdl.svg?branch=master)
 The python program to download files from OCW (MIT OpenCourseWare).
 
 
