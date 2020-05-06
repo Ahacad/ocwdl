@@ -1,65 +1,36 @@
 #! /usr/bin/env python
 
-import os 
+import os
 import re
 import urllib.request
 from bs4 import BeautifulSoup as BSP
 import wget
-
-namePattern = r'/[\~A-Za-z0-9-.:_]*/'
-filePattern = r'[\~A-Za-z0-9-/.:_]*' 
-
-BARRIER = r'##############################################################'
-ERROR = r'ERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERRORERROR'
-
-
+import argparse
+from header import *
 
 
 class course():
     
-    def __init__(self, mainPageUrl, outputLocation, name = None):
+    def __init__(self, pageUrl, outputLocation, name=None, choices=["assignments", "exams"]):
         """
         self.outputLocation  : the place where courses resources lay
         self.mainPageUrl     : the url of the main page of the very course in OCW
         self.name            : the name of the course
-        self.dlFolder        : the place where resources of the very course will be downloaded to
+        self.dlFolder        : the place where resources of the very course will be downloaded
         """
-        
+        self.pageUrl = pageUrl
         self.outputLocation = outputLocation
-        self.mainPageUrl = mainPageUrl
-        if name == None:
-            self.name = re.findall(namePattern, self.mainPageUrl)[-1][1:-1]
         
-        # make folders to store files
-        if not os.path.exists(self.outputLocation):
-            os.mkdir(self.outputLocation)
-        self.dlFolder = self.outputLocation + '/' + self.name
-        if not os.path.exists(self.dlFolder):
-            os.mkdir(self.dlFolder)
-        # -- * --
-        
-    def startocw(self):
-        try:
-            self.download(downloadLocation = self.dlFolder, choice = "assignments")
-        finally:
-            self.download(downloadLocation = self.dlFolder, choice = "exams")
+    def startocw(self, fileTypes=[r'pdf', r'zip', r'gz', r'tex', r'png', r'ipynb', r'py', r'tar', r'c', r'cpp'], choices=None):
+            self.dlPage(self.outputLocation,
+                        fileTypes=fileTypes)
 
+    def dlPage(self, downloadLocation, fileTypes=[r'pdf', r'zip', r'gz', r'tex', r'png', r'ipynb', r'py', r'tar', r'c', r'cpp']):
 
-    def dlPage(self, downloadLocation, choice = '', fileTypes = [r'pdf', r'zip', r'gz', r'tex', r'png', r'ipynb', r'py', r'tar']):
-
-        # make folder to store files
-        if not os.path.exists(downloadLocation):
-            os.mkdir(downloadLocation)
-        downloadLocation = downloadLocation + '/' + choice
-        if not os.path.exists(downloadLocation):
-            os.mkdir(downloadLocation)
-        # -- * -- 
-
-        downloadUrl = self.mainPageUrl + '/' + choice
+        downloadUrl = self.pageUrl
         html = urllib.request.urlopen(downloadUrl)
         bs = BSP(html, 'html.parser')
 
-        
         for fileType in fileTypes:
             filefinds = bs.find_all('a', {'href':re.compile(filePattern + r'.' + fileType)})
             for filefind in filefinds:
@@ -71,7 +42,8 @@ class course():
                         f.write('error happened while downloading' + str(filefind) + '\n')
                 finally:
                     pass
-            print('\n\n\n' + BARRIER + '\n' + '                   ###FINISHED DOWNLOAD' + str(fileType) + '###\n' + BARRIER + '\n') 
+            print('\n\n\n' + BARRIER + '\n' + '                   ###FINISHED DOWNLOAD' 
+                  + str(fileType) + '###\n' + BARRIER + '\n') 
 
 
     def dlFile(self, location, url, header = "https://ocw.mit.edu"):
@@ -82,8 +54,6 @@ class course():
         if url[0] != 'h':
             url = header + url
 
-        if not os.path.exists(location):
-            os.mkdir(location)
         print('\n'+ BARRIER + '\n###Downloading:', url,'###\n' + BARRIER + '\n')
         wget.download(url, out=location)
         
@@ -95,21 +65,48 @@ def readFromFile(fileName):
         for line in f:
             try:
                 ocw = course(line[:-1], "/home/ahacad/test/OCW")
-            except:
+            except Exception:
                 print(ERROR)
-                print('errow happening while downloading   ' + str(line) + '\n')
+                print('error happening while downloading   ' + str(line) + '\n')
                 with open('/home/ahacad/ocwdlerror', 'a') as f:
-                    f.write('errow happening while downloading   ' + str(line) + '\n')
+                    f.write('error happening while downloading   ' + str(line) + '\n')
             finally:
                 pass
 
 
 def main():
-    #ocw = course("https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-006-introduction-to-algorithms-fall-2011/", "/home/ahacad/test/OCW")
-    readFromFile("/home/ahacad/ocwlist")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-u", "--url", help="please input"
+                        "the url of the main page")
+    # parser.add_argument("-l", "--list", help="read from list in a text file")
+    # parser.add_argument("-c", "--choices", help="the subsections in"
+                        # " the main page, like 'exams', 'projects'")
+    # parser.add_argument("-t", "--types", help="customize your file types")
+    parser.add_argument("-r", "--recursive", help="download a page "
+                        "recursively, default off", action="store_true")
+    parser.add_argument("-o", "--output", help="output location", default = './')
+
+    args = parser.parse_args()
+
+    # choices = args.choices
+    # if choices: 
+        # choices = choices.split(' ')
+    # types = args.types
+    # if types:
+        # types = types.split(' ')
+    # else:
+        # types = [r'pdf', r'zip', r'gz', r'tex', r'png', r'ipynb', r'py', r'tar', r'c', r'cpp']
+    # if args.list:
+        # readFromFile(args.list)
+        # return 0
+    ocw = course(args.url, args.output)
+    ocw.startocw()
     
 
 if __name__ == "__main__":
     main()
+
+
+
 
 #"https://ocw.mit.edu/courses/mathematics/18-06-linear-algebra-spring-2010/", "/home/ahacad/test/OCW"
